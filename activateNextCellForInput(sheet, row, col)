@@ -1,0 +1,34 @@
+/**
+ * Highlights and activates the next cell, ready for input
+ * @param {object} sheet - The current sheet being referenced
+ * @param {number} row - The current row number being edited
+ * @param {number} col - The current column number being referenced 
+ */
+function activateNextCellForInput(sheet, row, col){
+  var lastRow = sheet.getLastRow();
+  var lastColumn = sheet.getLastColumn();
+  var newCol = 0;
+  var newRow = 0;
+  if (row === lastRow){
+    sheet.insertRowsAfter(lastRow, 1);
+  }
+  switch (sheet.getName()){
+    case "Orders":
+      if (col <= lastColumn-2){
+        newCol = col+1;
+        newRow = row;
+      } else {
+        newCol = 3; // activate Master Aisle column
+        newRow = row+1;
+      }
+    break;
+  }
+  sheet.getRange(row, col).activate();
+  SpreadsheetApp.flush();
+  var origBackground = sheet.getRange(newRow, newCol).getBackground();
+  sheet.getRange(newRow, newCol).activate();
+  sheet.getRange(newRow, newCol).setBackground("yellow");
+  SpreadsheetApp.flush();
+  Utilities.sleep(300);
+  sheet.getRange(newRow, newCol).setBackground(origBackground);
+}
