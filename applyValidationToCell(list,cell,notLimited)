@@ -1,0 +1,18 @@
+/**
+* Applies a validation rule to a cell, either strictly or permissably
+*/
+function applyValidationToCell(list,cell,notLimited) {
+  var oldBg = cell.getBackground();
+  // @TODO: activateNextCellForInput()
+  cell.setBackground("yellow");
+  var rule = SpreadsheetApp
+  .newDataValidation()
+  .requireValueInList(list)
+  .setAllowInvalid(notLimited) // strict or permissable?
+  .build();
+  cell.setDataValidation(rule);
+  cell.activate();
+  SpreadsheetApp.flush();
+  Utilities.sleep(500);
+  cell.setBackground(oldBg);
+}
