@@ -1,0 +1,251 @@
+// Global constants
+var sheetProducts         = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Products");
+var sheetOrders           = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Orders");
+var sheetInvoices         = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Invoices");
+var sheetAisles           = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Aisles");
+var sheetStockOnHand      = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("StockOnHand");
+var allAisles             = sheetAisles.getRange(2,1,sheetAisles.getLastRow()-1,3).getValues();
+var allProducts           = sheetProducts.getRange(2,1,sheetAisles.getLastRow()-1,7).getValues();
+const aislesMasterColumn    = 0;
+const aislesSecondaryColumn = 1;
+const aislesTertiaryColumn  = 2;
+const aislesSecRevColumn    = 3; // for reverse lookups
+const aislesMstRevColumn    = 4; // for reverse lookups
+const prodIDColumn          = 0;
+const prodMasterColumn      = 2;
+const prodSecondaryColumn   = 3;
+const prodTertiaryColumn    = 4;
+const prodBrandColumn       = 5;
+const prodDescColumn        = 6;
+const prodIDRevColumn       = 7;
+const prodShortCodeColumn   = 8;
+
+
+
+/**
+ * onEdit Event Trigger
+ *
+ * The onEdit(e) trigger runs automatically when a user changes the value of
+ * any cell in a spreadsheet. Because simple triggers fire automatically,
+ * without asking the user for authorization, they are subject to several
+ * restrictions:
+ * See https://developers.google.com/apps-script/guides/triggers#restrictions
+ *
+ * @param {Event} e The onEdit event.
+ */
+function onEdit(e){
+  var activeCell = e.range;
+  var v = activeCell.getValue();
+  var r = activeCell.getRow();
+  var c = activeCell.getColumn();
+  var activeSheet = activeCell.getSheet().getName();
+  
+  
+
+  if(activeSheet === "Products"){
+    
+
+  } else if(activeSheet === "Orders"){
+    if(c === 3 && r > 1){
+      // Primary Aisle has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear()
+      sheetOrders.getRange(r,c+1).clearDataValidations();
+      sheetOrders.getRange(r,c+2).clear()
+      sheetOrders.getRange(r,c+2).clearDataValidations();
+      sheetOrders.getRange(r,c+3).clear();
+      sheetOrders.getRange(r,c+3).clearDataValidations();
+      sheetOrders.getRange(r,c+4).clear();
+      sheetOrders.getRange(r,c+5).clear();
+      sheetOrders.getRange(r,c+6).clear();
+      // update validation rule for Secondary Aisle
+      // @TODO: activateNextCellForInput()
+      var filteredSecAisles = allAisles.filter(function (o){return o[0] === v });
+      var listToApply = filteredSecAisles.map(function (o){return o[1] }).sort();
+      var secondaryAisleCell = sheetOrders.getRange(r,c+1);
+      var notLimited = false; // strict setAllowInvalid
+      applyValidationToCell(listToApply,secondaryAisleCell,notLimited);
+    } else if(c === 4 && r > 1){
+      // Secondary Aisle has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear().clearDataValidations();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c+3).clear();
+      sheetOrders.getRange(r,c+4).clear();
+      sheetOrders.getRange(r,c+5).clear();
+      // update validation rule for Tertiary Aisle
+      // @TODO: activateNextCellForInput()
+      var filteredTerAisles = allAisles.filter(function (o){return o[1] === v });
+      var listToApply = filteredTerAisles.map(function (o){return o[2] }).sort();
+      var tertiaryAisleCell = sheetOrders.getRange(r,c+1);
+      var notLimited = false; // strict setAllowInvalid
+      applyValidationToCell(listToApply,tertiaryAisleCell,notLimited);
+    } else if(c === 5 && r > 1){
+      // Tertiary Aisle has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c+3).clear();
+      sheetOrders.getRange(r,c+4).clear();
+      // update validation rule for Product Description
+      // @TODO: activateNextCellForInput()
+      var filteredProdDescs = allProducts.filter(function (o){return o[4] === v });
+      var listToApply = filteredProdDescs.map(function (o){return o[6] }).sort();
+      var prodDescCell = sheetOrders.getRange(r,c+1);
+      var notLimited = false; // strict setAllowInvalid
+      applyValidationToCell(listToApply,prodDescCell,notLimited);
+    } else if(c === 6 && r > 1){
+      // Product Description has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c+3).clear();
+      // update value for Product ID
+      // @TODO: activateNextCellForInput()
+      var oldBg = sheetOrders.getRange(r+1,c+2).getBackground();
+      var filteredProdIDs = allProducts.filter(function (o){return o[6] === v });
+      var prodID = filteredProdIDs.map(function (o){return o[0] });
+      sheetOrders.getRange(r,c+1).setValue(prodID);
+      sheetOrders.getRange(r,c+2).activate();
+      SpreadsheetApp.flush();
+      Utilities.sleep(500);
+      sheetOrders.getRange(r,c+2).setBackground(oldBg);
+    } else if(c === 7 && r > 1){
+      // Product ID has changed, so clear columns to the left and right of it
+      sheetOrders.getRange(r,c+1).clear();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c-1).clear();
+      sheetOrders.getRange(r,c-1).clearDataValidations();
+      sheetOrders.getRange(r,c-2).clear();
+      sheetOrders.getRange(r,c-2).clearDataValidations();
+      sheetOrders.getRange(r,c-3).clear();
+      sheetOrders.getRange(r,c-3).clearDataValidations();
+      sheetOrders.getRange(r,c-4).clear();
+      // Find the values from the Product ID
+      sheetOrders.getRange(r,c-1).setValue(findByProdID(v, prodDescColumn));
+      sheetOrders.getRange(r,c-2).setValue(findByProdID(v, prodTertiaryColumn));
+      sheetOrders.getRange(r,c-3).setValue(findByProdID(v, prodSecondaryColumn));
+      sheetOrders.getRange(r,c-4).setValue(findByProdID(v, prodMasterColumn));
+    } else if(c === 9 && r > 1){
+      // Units has changed, so move the focus down one row
+      activateNextCellForInput(sheetOrders, r, c);
+    }
+
+  } else if(activeSheet === "Invoices"){
+
+  } else if(activeSheet === "Aisles"){
+
+  } else if(activeSheet === "StockOnHand"){j
+
+  }
+}
+
+
+/**
+ * Highlights and activates the next cell, ready for input
+ * @param {object} sheet - The current sheet being referenced
+ * @param {number} row - The current row number being edited
+ * @param {number} col - The current column number being referenced 
+ */
+function activateNextCellForInput(sheet, row, col){
+  var lastRow = sheet.getLastRow();
+  var lastColumn = sheet.getLastColumn();
+  var newCol = 0;
+  var newRow = 0;
+  if (row === lastRow){
+    sheet.insertRowsAfter(lastRow, 1);
+  }
+  switch (sheet.getName()){
+    case "Orders":
+      if (col <= lastColumn-2){
+        newCol = col+1;
+        newRow = row;
+      } else {
+        newCol = 3; // activate Master Aisle column
+        newRow = row+1;
+      }
+    break;
+  }
+  sheet.getRange(row, col).activate();
+  SpreadsheetApp.flush();
+  var origBackground = sheet.getRange(newRow, newCol).getBackground();
+  sheet.getRange(newRow, newCol).activate();
+  sheet.getRange(newRow, newCol).setBackground("yellow");
+  SpreadsheetApp.flush();
+  Utilities.sleep(300);
+  sheet.getRange(newRow, newCol).setBackground(origBackground);
+}
+
+
+/**
+ * Finds the requested value stored in the given column in
+ * the Products sheet, for the given Product ID.
+ * @param {string|number} prodID - The Product ID to look up.
+ * @param {number} column - The column number to look in.
+ * @returns {string} - The value in the given column for
+ *   the given product.
+ */
+function findByProdID(prodID, column){
+  // Find the given Product ID in the Products sheet.
+  var filteredValues = allProducts.filter(function (o){return o[prodIDColumn] === prodID });
+  // Return the value from the given column for that Product ID.
+  return filteredValues.map(function (o){return o[column] });
+  // @TODO: error handling
+}
+
+
+/**
+* Applies a validation rule to a cell, either strictly or permissably
+*/
+function applyValidationToCell(list,cell,notLimited) {
+  var oldBg = cell.getBackground();
+  // @TODO: activateNextCellForInput()
+  cell.setBackground("yellow");
+  var rule = SpreadsheetApp
+  .newDataValidation()
+  .requireValueInList(list)
+  .setAllowInvalid(notLimited) // strict or permissable?
+  .build();
+  cell.setDataValidation(rule);
+  cell.activate();
+  SpreadsheetApp.flush();
+  Utilities.sleep(500);
+  cell.setBackground(oldBg);
+}
+
+/**
+ * Applies validation rules to all rows in the Orders sheet in bulk.
+ */
+function bulkValidations(){
+  sheetOrders.activate();
+  // sheetOrders.getRange("C2").activate();
+  var lastRow = sheetOrders.getLastRow();
+  for (var currentRow=1;currentRow<=lastRow;currentRow++){
+    for (var currentColumn = 3;currentColumn<=6;currentColumn++){
+      var currentCell = sheetOrders.getRange(currentRow, currentColumn);
+      var currentValue = currentCell.getValue();
+      var previousValue = sheetOrders.getRange(currentRow, (currentColumn - 1)).getValue();
+      switch (currentColumn){
+        case 3: // Master Aisle column
+          var listToApply = allAisles.map(function (o){return o[0] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+        case 4: // Secondary Aisle column
+          var filteredPreviousValues = allAisles.filter(function (o){return o[0] === previousValue });
+          var listToApply = filteredPreviousValues.map(function (o){return o[1] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+        case 5: // Tertiary Aisle column
+          var filteredPreviousValues = allAisles.filter(function (o){return o[1] === previousValue });
+          var listToApply = filteredPreviousValues.map(function (o){return o[2] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+        case 6: // Product Description column
+          var filteredPreviousValues = allProducts.filter(function (o){return o[4] === previousValue });
+          var listToApply = filteredPreviousValues.map(function (o){return o[6] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+      } // end switch
+    } // end for loop - currentColumn
+  } // end for loop - currentRow
+} // end function
