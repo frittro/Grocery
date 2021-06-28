@@ -1,0 +1,15 @@
+/**
+ * Finds the requested value stored in the given column in
+ * the Products sheet, for the given Product ID.
+ * @param {string|number} prodID - The Product ID to look up.
+ * @param {number} column - The column number to look in.
+ * @returns {string} - The value in the given column for
+ *   the given product.
+ */
+function findByProdID(prodID, column){
+  // Find the given Product ID in the Products sheet.
+  var filteredValues = allProducts.filter(function (o){return o[prodIDColumn] === prodID });
+  // Return the value from the given column for that Product ID.
+  return filteredValues.map(function (o){return o[column] });
+  // @TODO: error handling
+}
