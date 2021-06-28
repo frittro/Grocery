@@ -1,0 +1,40 @@
+/**
+ * Applies validation rules to all rows in the Orders sheet in bulk.
+ */
+function bulkValidations(){
+  sheetOrders.activate();
+  // sheetOrders.getRange("C2").activate();
+  var lastRow = sheetOrders.getLastRow();
+  for (var currentRow=772;currentRow<=lastRow;currentRow++){
+    for (var currentColumn = 3;currentColumn<=6;currentColumn++){
+      var currentCell = sheetOrders.getRange(currentRow, currentColumn);
+      var currentValue = currentCell.getValue();
+      var previousValue = sheetOrders.getRange(currentRow, (currentColumn - 1)).getValue();
+      switch (currentColumn){
+        case 3: // Master Aisle column
+          var listToApply = allAisles.map(function (o){return o[0] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+        case 4: // Secondary Aisle column
+          var filteredPreviousValues = allAisles.filter(function (o){return o[0] === previousValue });
+          var listToApply = filteredPreviousValues.map(function (o){return o[1] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+        case 5: // Tertiary Aisle column
+          var filteredPreviousValues = allAisles.filter(function (o){return o[1] === previousValue });
+          var listToApply = filteredPreviousValues.map(function (o){return o[2] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+        case 6: // Product Description column
+          var filteredPreviousValues = allProducts.filter(function (o){return o[4] === previousValue });
+          var listToApply = filteredPreviousValues.map(function (o){return o[6] }).sort();
+          var notLimited = false; // strict setAllowInvalid
+          applyValidationToCell(listToApply,currentCell,notLimited);
+        break;
+      } // end switch
+    } // end for loop - currentColumn
+  } // end for loop - currentRow
+} // end function
