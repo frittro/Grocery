@@ -1,0 +1,113 @@
+/**
+ * onEdit Event Trigger
+ *
+ * The onEdit(e) trigger runs automatically when a user changes the value of
+ * any cell in a spreadsheet. Because simple triggers fire automatically,
+ * without asking the user for authorization, they are subject to several
+ * restrictions:
+ * See https://developers.google.com/apps-script/guides/triggers#restrictions
+ *
+ * @param {Event} e The onEdit event.
+ */
+function onEdit(e){
+  var activeCell = e.range;
+  var v = activeCell.getValue();
+  var r = activeCell.getRow();
+  var c = activeCell.getColumn();
+  var activeSheet = activeCell.getSheet().getName();
+  
+  
+
+  if(activeSheet === "Products"){
+    
+
+  } else if(activeSheet === "Orders"){
+    if(c === 3 && r > 1){
+      // Primary Aisle has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear()
+      sheetOrders.getRange(r,c+1).clearDataValidations();
+      sheetOrders.getRange(r,c+2).clear()
+      sheetOrders.getRange(r,c+2).clearDataValidations();
+      sheetOrders.getRange(r,c+3).clear();
+      sheetOrders.getRange(r,c+3).clearDataValidations();
+      sheetOrders.getRange(r,c+4).clear();
+      sheetOrders.getRange(r,c+5).clear();
+      sheetOrders.getRange(r,c+6).clear();
+      // update validation rule for Secondary Aisle
+      // @TODO: activateNextCellForInput()
+      var filteredSecAisles = allAisles.filter(function (o){return o[0] === v });
+      var listToApply = filteredSecAisles.map(function (o){return o[1] }).sort();
+      var secondaryAisleCell = sheetOrders.getRange(r,c+1);
+      var notLimited = false; // strict setAllowInvalid
+      applyValidationToCell(listToApply,secondaryAisleCell,notLimited);
+    } else if(c === 4 && r > 1){
+      // Secondary Aisle has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear().clearDataValidations();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c+3).clear();
+      sheetOrders.getRange(r,c+4).clear();
+      sheetOrders.getRange(r,c+5).clear();
+      // update validation rule for Tertiary Aisle
+      // @TODO: activateNextCellForInput()
+      var filteredTerAisles = allAisles.filter(function (o){return o[1] === v });
+      var listToApply = filteredTerAisles.map(function (o){return o[2] }).sort();
+      var tertiaryAisleCell = sheetOrders.getRange(r,c+1);
+      var notLimited = false; // strict setAllowInvalid
+      applyValidationToCell(listToApply,tertiaryAisleCell,notLimited);
+    } else if(c === 5 && r > 1){
+      // Tertiary Aisle has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c+3).clear();
+      sheetOrders.getRange(r,c+4).clear();
+      // update validation rule for Product Description
+      // @TODO: activateNextCellForInput()
+      var filteredProdDescs = allProducts.filter(function (o){return o[4] === v });
+      var listToApply = filteredProdDescs.map(function (o){return o[6] }).sort();
+      var prodDescCell = sheetOrders.getRange(r,c+1);
+      var notLimited = false; // strict setAllowInvalid
+      applyValidationToCell(listToApply,prodDescCell,notLimited);
+    } else if(c === 6 && r > 1){
+      // Product Description has changed, so clear columns to the right of it
+      sheetOrders.getRange(r,c+1).clear();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c+3).clear();
+      // update value for Product ID
+      // @TODO: activateNextCellForInput()
+      var oldBg = sheetOrders.getRange(r+1,c+2).getBackground();
+      var filteredProdIDs = allProducts.filter(function (o){return o[6] === v });
+      var prodID = filteredProdIDs.map(function (o){return o[0] });
+      sheetOrders.getRange(r,c+1).setValue(prodID);
+      sheetOrders.getRange(r,c+2).activate();
+      SpreadsheetApp.flush();
+      Utilities.sleep(500);
+      sheetOrders.getRange(r,c+2).setBackground(oldBg);
+    } else if(c === 7 && r > 1){
+      // Product ID has changed, so clear columns to the left and right of it
+      sheetOrders.getRange(r,c+1).clear();
+      sheetOrders.getRange(r,c+2).clear();
+      sheetOrders.getRange(r,c-1).clear();
+      sheetOrders.getRange(r,c-1).clearDataValidations();
+      sheetOrders.getRange(r,c-2).clear();
+      sheetOrders.getRange(r,c-2).clearDataValidations();
+      sheetOrders.getRange(r,c-3).clear();
+      sheetOrders.getRange(r,c-3).clearDataValidations();
+      sheetOrders.getRange(r,c-4).clear();
+      // Find the values from the Product ID
+      sheetOrders.getRange(r,c-1).setValue(findByProdID(v, prodDescColumn));
+      sheetOrders.getRange(r,c-2).setValue(findByProdID(v, prodTertiaryColumn));
+      sheetOrders.getRange(r,c-3).setValue(findByProdID(v, prodSecondaryColumn));
+      sheetOrders.getRange(r,c-4).setValue(findByProdID(v, prodMasterColumn));
+    } else if(c === 9 && r > 1){
+      // Units has changed, so move the focus down one row
+      activateNextCellForInput(sheetOrders, r, c);
+    }
+
+  } else if(activeSheet === "Invoices"){
+
+  } else if(activeSheet === "Aisles"){
+
+  } else if(activeSheet === "StockOnHand"){j
+
+  }
+}
