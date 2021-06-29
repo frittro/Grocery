@@ -1,0 +1,31 @@
+/*
+ * Grocery                                                                     ↓
+ * 
+ * Inventory management for our home groceries. Beyond simple stock control,
+ * this project will eventually encompass nutritional information, recipes, 
+ * menus, and waste minimisation.
+ * 
+ * Codebase maintained on [GitHub](https://github.com/frittro/Grocery).
+ */
+
+// Global declarations
+var sheetProducts    = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Products");
+var sheetOrders      = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Orders");
+var sheetInvoices    = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Invoices");
+var sheetAisles      = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Aisles");
+var sheetStockOnHand = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("StockOnHand");
+var allAisles        = sheetAisles.getRange(2,1,sheetAisles.getLastRow()-1,3).getValues();
+var allProducts      = sheetProducts.getRange(2,1,sheetAisles.getLastRow()-1,7).getValues();
+const aislesMasterColumn    = 0;
+const aislesSecondaryColumn = 1;
+const aislesTertiaryColumn  = 2;
+const aislesSecRevColumn    = 3; // for reverse lookups
+const aislesMstRevColumn    = 4; // for reverse lookups
+const prodIDColumn          = 0;
+const prodMasterColumn      = 2;
+const prodSecondaryColumn   = 3;
+const prodTertiaryColumn    = 4;
+const prodBrandColumn       = 5;
+const prodDescColumn        = 6;
+const prodIDRevColumn       = 7; // for reverse lookups
+const prodShortCodeColumn   = 8;
