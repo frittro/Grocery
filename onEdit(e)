@@ -1,13 +1,15 @@
 /**
- * onEdit Event Trigger
+ * onEdit event simple trigger
  *
- * The onEdit(e) trigger runs automatically when a user changes the value of
- * any cell in a spreadsheet. Because simple triggers fire automatically,
- * without asking the user for authorization, they are subject to several
- * restrictions:
+ * The onEdit(e) trigger runs automatically when a user changes the value of any cell in a spreadsheet.
+ * Because simple triggers fire automatically, without asking the user for authorization, they are subject
+ * to several restrictions:
  * See https://developers.google.com/apps-script/guides/triggers#restrictions
  *
  * @param {Event} e The onEdit event.
+ * @todo Need to minimise run time for onEdit() function. https://git.io/Jcqku
+ * @todo Conforming code to the Google JavaScript Style Guide. https://git.io/Jcqk2
+ * @todo Conforming to Google Apps Script Best Practices. https://git.io/Jcqk1
  */
 function onEdit(e){
   var activeCell = e.range;
@@ -16,11 +18,8 @@ function onEdit(e){
   var c = activeCell.getColumn();
   var activeSheet = activeCell.getSheet().getName();
   
-  
-
   if(activeSheet === "Products"){
-    
-
+  
   } else if(activeSheet === "Orders"){
     if(c === 3 && r > 1){
       // Primary Aisle has changed, so clear columns to the right of it
